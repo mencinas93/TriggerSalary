@@ -1,0 +1,31 @@
+select * from person.instructor
+
+
+CREATE OR REPLACE FUNCTION check_salary()
+	RETURNS TRIGGER
+	LANGUAGE PLPGSQL
+	AS $$
+	BEGIN
+		IF (NEW.salary - OLD.salary) / OLD.salary >= 1 THEN
+			RAISE 'The salary increment cannot that high.';
+		END IF;
+		RETURN NEW;
+	END;
+	$$
+
+
+CREATE TRIGGER before_update_salary
+BEFORE UPDATE
+ON person.instructor
+FOR EACH ROW
+EXECUTE PROCEDURE check_salary();
+
+
+select * from person.instructor
+
+UPDATE person.instructor SET salary = salary*2
+WHERE id = '10101'
+
+ALTER TRIGGER before_update_salary
+ON person.instructor
+RENAME TO salary_before_update;
